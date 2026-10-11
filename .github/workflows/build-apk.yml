@@ -39,7 +39,8 @@ jobs:
             autoconf \
             automake \
             libtool \
-            pkg-config
+            pkg-config \
+            wget
 
       - name: Install Buildozer
         run: |
@@ -47,17 +48,20 @@ jobs:
           python -m pip install cython buildozer
 
       - name: Install Android SDK and NDK
+        shell: bash
         run: |
+          set -euxo pipefail
+
           mkdir -p $HOME/.buildozer/android/platform
           cd $HOME/.buildozer/android/platform
 
-          curl -L -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O commandlinetools.zip
           unzip -q commandlinetools.zip
 
           mkdir -p android-sdk/cmdline-tools
           mv cmdline-tools android-sdk/cmdline-tools/latest
 
-          export PATH=$PATH:$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+          export PATH="$PATH:$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin"
 
           yes | sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk \
             "platform-tools" \
@@ -67,10 +71,15 @@ jobs:
             "cmdline-tools;latest"
 
       - name: Build APK
+        shell: bash
         env:
           ANDROID_SDK_ROOT: $HOME/.buildozer/android/platform/android-sdk
+          ANDROID_HOME: $HOME/.buildozer/android/platform/android-sdk
           ANDROID_NDK_ROOT: $HOME/.buildozer/android/platform/android-sdk/ndk/25.1.8937393
         run: |
+          set -euxo pipefail
+          export PATH="$PATH:$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin"
+          export PATH="$PATH:$HOME/.buildozer/android/platform/android-sdk/platform-tools"
           buildozer android debug
 
       - name: Upload APK artifact
