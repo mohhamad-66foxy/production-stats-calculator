@@ -18,31 +18,58 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             build-essential \
-            openjdk-11-jdk \
+            git \
+            unzip \
+            zip \
+            python3-dev \
             libffi-dev \
             libssl-dev \
             zlib1g-dev \
-            libgl1 \
-            libmtdev1 \
             autoconf \
             automake \
             libtool \
-            pkg-config \
-            unzip \
-            zip \
-            git
+            pkg-config
 
       - name: Install Buildozer
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install cython buildozer
 
+      - name: Install Android SDK and NDK
+        run: |
+          mkdir -p $HOME/.buildozer/android/platform
+          cd $HOME/.buildozer/android/platform
+
+          curl -L -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+          unzip -q commandlinetools.zip
+
+          mkdir -p android-sdk/cmdline-tools
+          mv cmdline-tools android-sdk/cmdline-tools/latest
+
+          export PATH=$PATH:$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+
+          yes | sdkmanager --sdk_root=$HOME/.buildozer/android/platform/android-sdk \
+            "platform-tools" \
+            "platforms;android-31" \
+            "build-tools;31.0.0" \
+            "ndk;25.1.8937393" \
+            "cmdline-tools;latest"
+
       - name: Build APK
+        env:
+          ANDROID_SDK_ROOT: $HOME/.buildozer/android/platform/android-sdk
+          ANDROID_NDK_ROOT: $HOME/.buildozer/android/platform/android-sdk/ndk/25.1.8937393
         run: |
           buildozer android debug
 
