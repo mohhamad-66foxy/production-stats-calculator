@@ -18,7 +18,7 @@ android.permissions = INTERNET,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE
 # Android build settings
 android.api = 31
 android.minapi = 21
-android.ndk = 25b
+android.ndk = 25.1.8937393
 android.archs = arm64-v8a
 android.private_storage = True
 
