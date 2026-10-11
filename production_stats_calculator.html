@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 ماشین حساب آمار تولید</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+            --bg: #ecf0f1;
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+            --border: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), #2980b9);
+            color: white;
+            padding: 30px 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--bg);
+            padding-bottom: 10px;
+        }
+
+        .work-hours-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .work-hours-option {
+            display: flex;
+            align-items: center;
+        }
+
+        .work-hours-option label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            flex: 1;
+        }
+
+        .work-hours-option input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .work-hours-option span {
+            padding: 8px 12px;
+            background: var(--bg);
+            border-radius: 6px;
+            flex: 1;
+            transition: background 0.3s;
+        }
+
+        .work-hours-option label:has(input:checked) span {
+            background: var(--primary);
+            color: white;
+        }
+
+        .custom-option {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #customWorkHours {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        #customWorkHours:disabled {
+            background: var(--bg);
+            cursor: not-allowed;
+        }
+
+        .section-item {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .section-name-input {
+            font-size: 14px;
+            font-weight: 600;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .section-item-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .section-item-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text);
+        }
+
+        .input-group input {
+            padding: 10px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 4px var(--primary);
+        }
+
+        .calculation-results {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--bg);
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #7f8c8d;
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .section-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+            flex: 1;
+        }
+
+        .btn-remove {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-remove:hover {
+            background: #c0392b;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 600px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .summary-item {
+            background: var(--bg);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid transparent;
+        }
+
+        .summary-item .label {
+            display: block;
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+
+        .summary-item .value {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: var(--bg);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            width: 0%;
+            transition: width 0.3s;
+            border-radius: 4px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .btn-add-section {
+            background: var(--secondary);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-add-section:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .actions .btn {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 ماشین حساب آمار تولید</h1>
+            <p class="subtitle">محاسبه قطعات و زمان کاری</p>
+        </div>
+
+        <!-- Working Hours Section -->
+        <div class="section">
+            <h2>⏰ ساعت کاری</h2>
+            <div class="work-hours-container">
+                <div class="work-hours-option">
+                    <label>
+                        <input type="radio" name="workHours" value="400" checked>
+                        <span>8 ساعت = 400 دقیقه</span>
+                    </label>
+                </div>
+                <div class="work-hours-option">
+                    <label>
+                        <input type="radio" name="workHours" value="625">
+                        <span>12 ساعت = 625 دقیقه</span>
+                    </label>
+                </div>
+                <div class="work-hours-option custom-option">
+                    <label>
+                        <input type="radio" name="workHours" value="custom">
+                        <span>سفارشی:</span>
+                    </label>
+                    <input type="number" id="customWorkHours" placeholder="دقیقه" min="1" disabled>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sections List -->
+        <div class="section">
+            <h2>📍 قسمت‌های کاری</h2>
+            <div id="sectionsList"></div>
+            <button class="btn btn-add-section" onclick="addSection()">+ افزودن قسمت جدید</button>
+        </div>
+
+        <!-- Summary -->
+        <div class="section">
+            <h2>📈 خلاصه</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <span class="label">کل قطعات:</span>
+                    <span class="value" id="totalPieces">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">کل زمان (دقیقه):</span>
+                    <span class="value" id="totalTime">0</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">ساعت کاری:</span>
+                    <span class="value" id="totalWorkHours">400</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">درصد تحقق:</span>
+                    <span class="value" id="achievement">0%</span>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="section actions">
+            <button class="btn btn-primary" onclick="calculateAll()">🔢 محاسبه کل</button>
+            <button class="btn btn-secondary" onclick="clearAll()">🗑️ پاک کردن همه</button>
+            <button class="btn btn-secondary" onclick="exportData()">📥 دانلود گزارش</button>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let sections = JSON.parse(localStorage.getItem('sections')) || [];
+        let workHours = parseInt(localStorage.getItem('workHours')) || 400;
+
+        // Constants
+        const FORMULAS = {
+            calculatePieces: (minutes, timePerPiece) => {
+                if (!minutes || !timePerPiece) return 0;
+                return Math.floor((minutes * 60) / timePerPiece);
+            },
+            
+            calculateTime: (pieces, timePerPiece) => {
+                if (!pieces || !timePerPiece) return 0;
+                return (pieces * timePerPiece) / 60;
+            }
+        };
+
+        // Event Listeners
+        document.querySelectorAll('input[name="workHours"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'custom') {
+                    document.getElementById('customWorkHours').disabled = false;
+                    document.getElementById('customWorkHours').focus();
+                } else {
+                    document.getElementById('customWorkHours').disabled = true;
+                    workHours = parseInt(e.target.value);
+                    localStorage.setItem('workHours', workHours);
+                    updateUI();
+                }
+            });
+        });
+
+        document.getElementById('customWorkHours').addEventListener('input', (e) => {
+            const value = parseInt(e.target.value) || 0;
+            if (value > 0) {
+                workHours = value;
+                localStorage.setItem('workHours', workHours);
+                updateUI();
+            }
+        });
+
+        // Add Section
+        function addSection() {
+            const newSection = {
+                id: Date.now(),
+                name: `قسمت ${sections.length + 1}`,
+                timePerPiece: 0,
+                pieces: 0,
+                minutes: 0
+            };
+            sections.push(newSection);
+            saveSections();
+            renderSections();
+        }
+
+        // Remove Section
+        function removeSection(id) {
+            if (confirm('آیا مطمئن هستید؟')) {
+                sections = sections.filter(s => s.id !== id);
+                saveSections();
+                renderSections();
+            }
+        }
+
+        // Update Section
+        function updateSection(id, field, value) {
+            const section = sections.find(s => s.id === id);
+            if (section) {
+                section[field] = value ? parseFloat(value) : (field === 'name' ? value : 0);
+                
+                if (field === 'minutes') {
+                    section.pieces = FORMULAS.calculatePieces(section.minutes, section.timePerPiece);
+                } else if (field === 'pieces') {
+                    section.minutes = FORMULAS.calculateTime(section.pieces, section.timePerPiece);
+                } else if (field === 'timePerPiece') {
+                    if (section.minutes > 0) {
+                        section.pieces = FORMULAS.calculatePieces(section.minutes, section.timePerPiece);
+                    }
+                }
+                
+                saveSections();
+                renderSections();
+            }
+        }
+
+        // Render Sections
+        function renderSections() {
+            const container = document.getElementById('sectionsList');
+            container.innerHTML = '';
+            
+            if (sections.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #7f8c8d;">هنوز قسمتی افزوده نشده است</p>';
+                return;
+            }
+            
+            sections.forEach(section => {
+                const el = document.createElement('div');
+                el.className = 'section-item';
+                
+                const time = section.pieces && section.timePerPiece 
+                    ? FORMULAS.calculateTime(section.pieces, section.timePerPiece)
+                    : 0;
+                
+                let resultsHtml = '';
+                if (section.timePerPiece && section.pieces) {
+                    resultsHtml += `
+                        <div class="result-row">
+                            <span class="result-label">${section.pieces} قطعه × ${section.timePerPiece} ثانیه</span>
+                            <span class="result-value">${time.toFixed(2)} دقیقه</span>
+                        </div>
+                    `;
+                }
+                
+                if (section.timePerPiece && section.minutes) {
+                    const pieces = FORMULAS.calculatePieces(section.minutes, section.timePerPiece);
+                    resultsHtml += `
+                        <div class="result-row">
+                            <span class="result-label">${section.minutes} دقیقه ÷ ${section.timePerPiece} ثانیه</span>
+                            <span class="result-value">${pieces} قطعه</span>
+                        </div>
+                    `;
+                }
+                
+                el.innerHTML = `
+                    <input 
+                        type="text" 
+                        class="section-name-input" 
+                        value="${section.name}"
+                        onchange="updateSection(${section.id}, 'name', this.value)"
+                        placeholder="نام قسمت"
+                    >
+                    
+                    <div class="section-item-content">
+                        <div class="input-group">
+                            <label>تایم هر قطعه (ثانیه)</label>
+                            <input 
+                                type="number" 
+                                value="${section.timePerPiece || ''}"
+                                onchange="updateSection(${section.id}, 'timePerPiece', this.value)"
+                                placeholder="مثلا: 12"
+                                min="0"
+                                step="0.1"
+                            >
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>تعداد قطعات</label>
+                            <input 
+                                type="number" 
+                                value="${section.pieces || ''}"
+                                onchange="updateSection(${section.id}, 'pieces', this.value)"
+                                placeholder="مثلا: 500"
+                                min="0"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="section-item-content">
+                        <div class="input-group">
+                            <label>دقیقه (برای محاسبه قطعات)</label>
+                            <input 
+                                type="number" 
+                                value="${section.minutes || ''}"
+                                onchange="updateSection(${section.id}, 'minutes', this.value)"
+                                placeholder="مثلا: 30"
+                                min="0"
+                                step="0.1"
+                            >
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>زمان مورد نیاز (دقیقه)</label>
+                            <input 
+                                type="text" 
+                                value="${time.toFixed(2)}"
+                                readonly
+                                style="background: #ecf0f1; cursor: not-allowed;"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="calculation-results">
+                        ${resultsHtml || '<p style="color: #7f8c8d; font-size: 12px;">لطفا اطلاعات را کامل کنید</p>'}
+                    </div>
+                    
+                    <div class="section-item-actions">
+                        <button class="btn-small btn-remove" onclick="removeSection(${section.id})">
+                            🗑️ حذف قسمت
+                        </button>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+            
+            calculateAll();
+        }
+
+        // Calculate All
+        function calculateAll() {
+            let totalPieces = 0;
+            let totalTime = 0;
+            
+            sections.forEach(section => {
+                if (section.timePerPiece) {
+                    if (section.pieces) {
+                        totalPieces += section.pieces;
+                        totalTime += FORMULAS.calculateTime(section.pieces, section.timePerPiece);
+                    } else if (section.minutes) {
+                        const pieces = FORMULAS.calculatePieces(section.minutes, section.timePerPiece);
+                        totalPieces += pieces;
+                        totalTime += section.minutes;
+                    }
+                }
+            });
+            
+            document.getElementById('totalPieces').textContent = totalPieces;
+            document.getElementById('totalTime').textContent = totalTime.toFixed(2);
+            document.getElementById('totalWorkHours').textContent = workHours;
+            
+            const achievement = workHours > 0 ? (totalTime / workHours * 100).toFixed(1) : 0;
+            document.getElementById('achievement').textContent = achievement + '%';
+            
+            const percentage = Math.min(achievement, 100);
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = percentage + '%';
+            
+            if (percentage >= 100) {
+                progressFill.style.background = 'linear-gradient(90deg, #2ecc71, #27ae60)';
+            } else if (percentage >= 80) {
+                progressFill.style.background = 'linear-gradient(90deg, #3498db, #2980b9)';
+            } else {
+                progressFill.style.background = 'linear-gradient(90deg, #f39c12, #d68910)';
+            }
+        }
+
+        // Clear All
+        function clearAll() {
+            if (confirm('آیا مطمئن هستید که می‌خواهید همه داده‌ها را پاک کنید؟')) {
+                sections = [];
+                saveSections();
+                renderSections();
+            }
+        }
+
+        // Export Data
+        function exportData() {
+            let csv = 'گزارش آمار تولید\n\n';
+            csv += `ساعت کاری: ${workHours} دقیقه\n`;
+            csv += `تاریخ: ${new Date().toLocaleDateString('fa-IR')}\n\n`;
+            csv += 'نام قسمت,تایم هر قطعه (ثانیه),تعداد قطعات,زمان (دقیقه)\n';
+            
+            let totalPieces = 0;
+            let totalTime = 0;
+            
+            sections.forEach(section => {
+                const time = section.pieces && section.timePerPiece 
+                    ? FORMULAS.calculateTime(section.pieces, section.timePerPiece)
+                    : 0;
+                csv += `${section.name},${section.timePerPiece},${section.pieces},${time.toFixed(2)}\n`;
+                totalPieces += section.pieces || 0;
+                totalTime += time;
+            });
+            
+            csv += `\nکل قطعات,${totalPieces}\n`;
+            csv += `کل زمان,${totalTime.toFixed(2)} دقیقه\n`;
+            csv += `درصد تحقق,${(totalTime / workHours * 100).toFixed(1)}%\n`;
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `گزارش-آمار-${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Save/Load
+        function saveSections() {
+            localStorage.setItem('sections', JSON.stringify(sections));
+        }
+
+        // Initialize
+        function init() {
+            renderSections();
+            
+            const customRadio = document.querySelector('input[name="workHours"][value="custom"]');
+            if (workHours !== 400 && workHours !== 625) {
+                customRadio.checked = true;
+                document.getElementById('customWorkHours').disabled = false;
+                document.getElementById('customWorkHours').value = workHours;
+            } else {
+                document.querySelector(`input[name="workHours"][value="${workHours}"]`).checked = true;
+            }
+            
+            updateUI();
+        }
+
+        function updateUI() {
+            renderSections();
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
